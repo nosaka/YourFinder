@@ -1,9 +1,15 @@
 package me.ns.yourfinder.data
 
+import android.arch.persistence.room.Entity
+import android.arch.persistence.room.PrimaryKey
+
 /**
  * Created by shintaro.nosaka on 2017/09/08.
  */
+@Entity
 class Finder {
-    private var name:String? = null
-    private var description:String? = null
+    @PrimaryKey(autoGenerate = true)
+    var id: Int? = null
+    var name: String? = null
+    var description: String? = null
 }

@@ -1,27 +1,57 @@
 package me.ns.yourfinder.activity
 
+import android.app.Activity
+import android.arch.lifecycle.LifecycleActivity
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.ViewModel
+import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
+import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import me.ns.yourfinder.R
+import me.ns.yourfinder.adapter.FinderAdapter
+import me.ns.yourfinder.data.AppDatabase
+import me.ns.yourfinder.data.Finder
+import me.ns.yourfinder.databinding.ActivityMainBinding
+import me.ns.yourfinder.dialog.EditFinderDialog
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : LifecycleActivity() {
+
+    /**
+     * ViewModel
+     */
+    class VC(activity: Activity) : ViewModel() {
+
+        private val finderDao = AppDatabase.getInMemoryDatabase(activity).finderDao()
+
+        val finders: LiveData<List<Finder>> = finderDao.allLiveData()
+        private val activity: Activity = activity
+
+
+        fun onClickFab(view: View) {
+            EditFinderDialog.show(activity.fragmentManager, null)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val toolbar = findViewById(R.id.toolbar) as Toolbar
-        setSupportActionBar(toolbar)
+        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
 
-        val fab = findViewById(R.id.fab) as FloatingActionButton
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+        setActionBar(binding.mainToolbar)
+
+        binding.vc = VC(this@MainActivity)
+
+        val adapter = FinderAdapter(this@MainActivity, binding.vc.finders)
+        adapter.onItemClick = { item ->
+            item.id?.let {
+                EditFinderDialog.show(fragmentManager, it)
+            }
         }
+        binding.mainRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+        binding.mainRecyclerView.adapter = adapter
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

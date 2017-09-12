@@ -12,4 +12,9 @@ class Finder {
     var id: Int? = null
     var name: String? = null
     var description: String? = null
+    var position: Int? = null
+
+    var x: Float = 0f
+    var y: Float = 0f
+    var init: Boolean = true
 }

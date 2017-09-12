@@ -1,8 +1,5 @@
 package me.ns.yourfinder.adapter
 
-import android.arch.lifecycle.LifecycleOwner
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
 import android.databinding.DataBindingUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -18,19 +15,11 @@ import me.ns.yourfinder.databinding.ListItemFinderBinding
  *
  * Created by shintaro.nosaka on 2017/09/11.
  */
-class FinderAdapter(lifecycleOwner: LifecycleOwner,
-                    private var items: LiveData<List<Finder>>) : RecyclerView.Adapter<FinderAdapter.VH>() {
+class FinderAdapter(var items: List<Finder>) : RecyclerView.Adapter<FinderAdapter.VH>() {
 
     var onItemClick: ((item: Finder) -> Unit)? = null
 
-    init {
-        items.observe(lifecycleOwner, Observer {
-            notifyDataSetChanged()
-        })
-
-    }
-
-    override fun getItemCount(): Int = items.value?.count() ?: 0
+    override fun getItemCount(): Int = items.count()
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         holder.binding.item = getItem(position)
@@ -41,7 +30,7 @@ class FinderAdapter(lifecycleOwner: LifecycleOwner,
         return VH(view)
     }
 
-    private fun getItem(position: Int): Finder? = items.value?.get(position)
+    fun getItem(position: Int): Finder = items.get(position)
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -54,6 +43,5 @@ class FinderAdapter(lifecycleOwner: LifecycleOwner,
         }
 
     }
-
 
 }

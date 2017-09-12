@@ -23,6 +23,7 @@
             android:id="@+id/finder_NameTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/label_hint_finder_name"
             android:text="@{item.name}"
             android:textColor="@android:color/primary_text_light"
             android:textSize="@dimen/material_text_list_primary" />
@@ -31,6 +32,7 @@
             android:id="@+id/finder_DescriptionTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/label_hint_finder_description"
             android:text="@{item.description}"
             android:textColor="@android:color/tertiary_text_light"
             android:textSize="@dimen/material_text_list_secondary" />

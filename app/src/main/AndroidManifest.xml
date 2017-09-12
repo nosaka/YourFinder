@@ -21,6 +21,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.TransientActivity"
+            android:theme="@style/AppTheme.NoActionBar.Transparent" />
+
         <service
             android:name=".service.AppWallpaperService"
             android:label="Test SSS"

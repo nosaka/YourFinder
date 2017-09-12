@@ -17,19 +17,23 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <EditText
-            android:id="@+id/addFinder_name_TextView"
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/addFinder_nameTextInputEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/input_hint_finder_name"
             android:inputType="text"
             android:text="@={finder.name}" />
 
-        <EditText
-            android:id="@+id/addFinder_description_TextView"
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/addFinder_descriptionTextInputEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/input_hint_finder_description"
             android:inputType="text"
             android:text="@={finder.description}" />
+
 
     </LinearLayout>
 

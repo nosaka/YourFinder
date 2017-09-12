@@ -19,17 +19,23 @@ interface FinderDao {
     @Update
     fun update(value: Finder)
 
-    @Query("SELECT * FROM Finder")
+    @Update
+    fun update(value: List<Finder>)
+
+    @Delete
+    fun delete(value: Finder)
+
+    @Query("SELECT * FROM Finder ORDER BY position")
     fun allLiveData(): LiveData<List<Finder>>
 
-    @Query("SELECT * FROM Finder")
+    @Query("SELECT * FROM Finder ORDER BY position")
     fun all(): List<Finder>
 
     @Query("SELECT * FROM Finder WHERE id = :id LIMIT 1")
-    fun findLiveData(id: Int): LiveData<Finder>?
+    fun findLiveData(id: Int?): LiveData<Finder>?
 
     @Query("SELECT * FROM Finder WHERE id = :id LIMIT 1")
-    fun find(id: Int): Finder?
+    fun find(id: Int?): Finder?
 
 
 }

@@ -7,6 +7,7 @@ import android.app.FragmentManager
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.LifecycleRegistry
+import android.content.DialogInterface
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import me.ns.yourfinder.data.AppDatabase
 import me.ns.yourfinder.data.Finder
 import me.ns.yourfinder.data.FinderDao
 import me.ns.yourfinder.databinding.DialogEditFinderBinding
+import me.ns.yourfinder.listener.DialogListener
 
 
 /**
@@ -45,10 +47,14 @@ class EditFinderDialog : DialogFragment(), LifecycleOwner {
 
     private var finderId: Int = -1
 
+    private var listener: DialogListener? = null
+
     override fun getLifecycle(): Lifecycle = LifecycleRegistry(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        listener = (activity as? DialogListener)
+
         finderDao = AppDatabase.getInMemoryDatabase(context).finderDao()
         arguments?.let {
             if (it.containsKey(KEY_BUNDLE_FINDER_ID)) {
@@ -69,6 +75,11 @@ class EditFinderDialog : DialogFragment(), LifecycleOwner {
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+        super.onDismiss(dialog)
+        listener?.onDismiss(this@EditFinderDialog)
     }
 
 }

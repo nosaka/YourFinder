@@ -1,11 +1,10 @@
 package me.ns.yourfinder.activity
 
-import android.app.Activity
 import android.arch.lifecycle.LifecycleActivity
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModel
 import android.databinding.DataBindingUtil
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.Menu
@@ -16,7 +15,6 @@ import me.ns.yourfinder.adapter.FinderAdapter
 import me.ns.yourfinder.data.AppDatabase
 import me.ns.yourfinder.data.FinderDao
 import me.ns.yourfinder.databinding.ActivityMainBinding
-import me.ns.yourfinder.dialog.EditFinderDialog
 import me.ns.yourfinder.listener.ItemTouchCallbackMethod
 import me.ns.yourfinder.listener.ItemTouchHelperCallback
 import java.util.*
@@ -25,12 +23,13 @@ import java.util.*
 class MainActivity : LifecycleActivity(), ItemTouchCallbackMethod {
 
     /**
-     * ViewModel
+     * Handlers
      */
-    class VC(private val activity: Activity) : ViewModel() {
+    @Suppress("UNUSED_PARAMETER")
+    inner class Handlers {
 
-        fun onClickFab(view: View) {
-            EditFinderDialog.show(activity.fragmentManager, null)
+        fun onClickFloatingActionButton(view: View) {
+            startActivity(EditFinderActivity.intent(this@MainActivity, null))
         }
     }
 
@@ -42,12 +41,13 @@ class MainActivity : LifecycleActivity(), ItemTouchCallbackMethod {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        finderDao = AppDatabase.getInMemoryDatabase(this@MainActivity).finderDao()
+
         binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        binding.handlers = Handlers()
 
         setActionBar(binding.mainToolbar)
-
-        binding.vc = VC(this@MainActivity)
-        finderDao = AppDatabase.getInMemoryDatabase(this@MainActivity).finderDao()
 
         val finderItems = finderDao.allLiveData()
         finderItems.observe(this@MainActivity, Observer { value ->
@@ -58,7 +58,7 @@ class MainActivity : LifecycleActivity(), ItemTouchCallbackMethod {
         val helper = ItemTouchHelper(ItemTouchHelperCallback(this@MainActivity))
         finderAdapter.onItemClick = { item ->
             item.id?.let {
-                EditFinderDialog.show(fragmentManager, it)
+                startActivity(EditFinderActivity.intent(this@MainActivity, it))
             }
         }
         binding.mainRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
@@ -89,7 +89,21 @@ class MainActivity : LifecycleActivity(), ItemTouchCallbackMethod {
 
     override fun onDelete(position: Int) {
         val item = finderAdapter.getItem(position)
-        finderDao.delete(item)
+        val message = getString(R.string.message_delete_finder, item.name ?: getString(R.string.finder))
+        Snackbar.make(binding.mainRecyclerView, message, Snackbar.LENGTH_SHORT)
+                .setAction(R.string.action_undo, {
+                    finderAdapter.notifyItemChanged(position)
+                })
+                .addCallback(object : Snackbar.Callback() {
+                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                        super.onDismissed(transientBottomBar, event)
+                        if (event != DISMISS_EVENT_ACTION) {
+                            finderDao.delete(item)
+                        }
+                    }
+                })
+                .show()
+
     }
 
     override fun onMoveFinished() {

@@ -10,7 +10,7 @@ import android.content.Context
  *
  * Created by shintaro.nosaka on 2017/09/11.
  */
-@Database(entities = arrayOf(Finder::class), version = 6)
+@Database(entities = arrayOf(Finder::class), version = 9)
 abstract class AppDatabase : RoomDatabase() {
 
     companion object {

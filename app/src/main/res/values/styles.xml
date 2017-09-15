@@ -18,13 +18,21 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="colorPrimary">@android:color/transparent</item>
-        <item name="android:windowAnimationStyle">@style/NoAnimation</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
     </style>
 
-    <style name="NoAnimation" parent="android:Animation" />
+    <style name="AppTheme.NoActionBar.Float" parent="AppTheme.NoActionBar.Transparent">
+        <item name="android:windowAnimationStyle">@style/FloatAnimation</item>
+        <item name="android:windowBackground">@color/bgDarkTransparent</item>
+    </style>
+
+    <style name="FloatAnimation">
+        <item name="android:windowEnterAnimation">@anim/float_enter</item>
+        <item name="android:windowExitAnimation">@anim/float_exit</item>
+    </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 

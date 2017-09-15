@@ -3,6 +3,8 @@
     package="me.ns.yourfinder">
 
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -22,6 +24,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activity.EditFinderActivity"
+            android:theme="@style/AppTheme.NoActionBar.Float" />
+        <activity
             android:name=".activity.TransientActivity"
             android:theme="@style/AppTheme.NoActionBar.Transparent" />
 
@@ -32,10 +37,12 @@
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
             </intent-filter>
+
             <meta-data
                 android:name="android.service.wallpaper"
                 android:resource="@xml/res_sample" />
         </service>
+
     </application>
 
 </manifest>

@@ -1,16 +1,16 @@
 package me.ns.yourfinder.service
 
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Rect
+import android.app.WallpaperManager
+import android.content.Intent
+import android.graphics.*
 import android.os.Handler
 import android.service.wallpaper.WallpaperService
 import android.view.MotionEvent
 import android.view.SurfaceHolder
-import me.ns.yourfinder.activity.TransientActivity
 import me.ns.yourfinder.data.AppDatabase
 import me.ns.yourfinder.data.Finder
 import me.ns.yourfinder.data.FinderDao
+import me.ns.yourfinder.util.BitmapUtil
 
 
 /**
@@ -26,40 +26,31 @@ class AppWallpaperService : WallpaperService() {
             val INTERVAL_RECEPTION_DOUBLE_TOUCH = 300L
         }
 
-        internal val radius: Float = 120f
-        private val halfRadius: Float = radius / 2
+        internal var radius: Float = 160f
 
         internal var x: Float = 0.0f
             set(value) {
-                top = value + halfRadius
-                bottom = value - halfRadius
+                top = value + radius
+                bottom = value - radius
                 field = value
             }
         internal var y: Float = 0.0f
             set(value) {
-                left = value + halfRadius
-                right = value - halfRadius
+                left = value + radius
+                right = value - radius
                 field = value
             }
 
-        internal val paint = Paint().apply {
-            color = Color.WHITE
-            isAntiAlias = true
-            setShadowLayer(8f, 0f, 0f, Color.GRAY)
-        }
+        internal var bitmap: Bitmap? = null
 
-        internal val textPaint = Paint().apply {
-            color = Color.GRAY
-            textSize = 32f
-            isAntiAlias = true
-            textAlign = Paint.Align.CENTER
-        }
-
-
-        private var top: Float = 0f
-        private var bottom: Float = 0f
-        private var left: Float = 0f
-        private var right: Float = 0f
+        internal var top: Float = 0f
+            get() = field
+        internal var bottom: Float = 0f
+            get() = field
+        internal var left: Float = 0f
+            get() = field
+        internal var right: Float = 0f
+            get() = field
 
         internal var touched: Boolean = false
 
@@ -68,6 +59,11 @@ class AppWallpaperService : WallpaperService() {
         init {
             x = finder.x
             y = finder.y
+            finder.iconUrl?.let {
+                val size = (radius * 2).toInt()
+                val scaledBitmap = BitmapUtil.createScaledBitmap(it, size, size)
+                bitmap = BitmapUtil.createCircleBitmap(scaledBitmap, radius)
+            }
         }
 
         internal fun checkTouched(actionDown: MotionEvent) {
@@ -95,70 +91,111 @@ class AppWallpaperService : WallpaperService() {
 
     inner class LiveEngine : Engine() {
 
-        private val INFLATE_SIZE = 16
-
-        private val touchedPaint = Paint().apply {
-            color = Color.LTGRAY
+        private val paint = Paint().apply {
             isAntiAlias = true
-            setShadowLayer(5f, 0f, 0f, Color.GRAY)
+            setShadowLayer(8f, 0f, 0f, Color.GRAY)
         }
 
-        private var mFinderConfigs = ArrayList<FinderConfig>()
+        private val textPaint = Paint().apply {
+            color = Color.GRAY
+            textSize = 32f
+            isAntiAlias = true
+            textAlign = Paint.Align.CENTER
+        }
+
+        private var finderConfigs = ArrayList<FinderConfig>()
 
         private lateinit var finderDao: FinderDao
 
+        private lateinit var wallpaperManager: WallpaperManager
+
         override fun onCreate(surfaceHolder: SurfaceHolder?) {
             super.onCreate(surfaceHolder)
+            wallpaperManager = WallpaperManager.getInstance(this@AppWallpaperService)
 
             finderDao = AppDatabase.getInMemoryDatabase(this@AppWallpaperService).finderDao()
-            val finders = finderDao.all()
-            finders.forEach {
-                val config = FinderConfig(finder = it)
-                mFinderConfigs.add(config)
-            }
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
-            drawFrame(init = true)
+            initializeFinderConfigs()
+            drawFrame()
         }
 
-        private fun drawFrame(init: Boolean = false, commit: Boolean = false) {
+        override fun onVisibilityChanged(visible: Boolean) {
+            super.onVisibilityChanged(visible)
+            if (visible) {
+                initializeFinderConfigs()
+                drawFrame()
+            }
+        }
+
+        private fun initializeFinderConfigs() {
+            finderConfigs.clear()
+            val finders = finderDao.all()
+            finders.forEach {
+                val config = FinderConfig(finder = it)
+                finderConfigs.add(config)
+            }
+
+            val centerX = wallpaperManager.desiredMinimumHeight.toFloat() / 2
+            val centerY = wallpaperManager.desiredMinimumWidth.toFloat() / 2
+
+            finderConfigs.forEach {
+                if (it.finder.init) {
+                    it.apply {
+                        x = centerX
+                        y = centerY
+                        it.finder.x = x
+                        it.finder.y = y
+                    }
+                    it.finder.init = false
+                    finderDao.update(it.finder)
+                }
+            }
+        }
+
+        private fun recordFinderConfigsCoordinate() {
+            finderConfigs.forEach {
+                it.finder.x = it.x
+                it.finder.y = it.y
+            }
+            val finders = finderConfigs.map { it.finder }
+            finderDao.update(finders)
+        }
+
+        private fun drawFrame() {
             surfaceHolder.lockCanvas().apply {
                 try {
-                    drawColor(Color.WHITE)
+                    drawColor(Color.WHITE, PorterDuff.Mode.CLEAR);
 
-                    mFinderConfigs.forEach {
-                        if (init && it.finder.init) {
-                            it.apply {
-                                x = (width / 2).toFloat()
-                                y = (height / 2).toFloat()
-                                it.finder.x = x
-                                it.finder.y = y
-                            }
-                            it.finder.init = false
-                            finderDao.update(it.finder)
-                        }
+                    finderConfigs.forEach {
                         it.apply {
-                            drawCircle(x, y, if (touched) radius + INFLATE_SIZE else radius, if (touched) touchedPaint else paint)
-                            val text = finder.name
-                            val max: Int = if (radius / textPaint.textSize > text?.length ?: 0) {
-                                text!!.length
+
+                            bitmap?.let {
+                                val dst = RectF(0f, 0f, (radius * 2), (radius * 2))
+                                dst.offset((x - radius), (y - radius))
+                                val src = Rect(0, 0, it.width, it.height)
+                                drawBitmap(it, src, dst, paint)
+                            }
+
+                            val text = finder.name ?: ""
+                            val max: Int = if (radius / textPaint.textSize > text.length) {
+                                text.length
                             } else {
                                 (radius / textPaint.textSize).toInt()
                             }
                             val textBounds = Rect()
-                            textPaint.getTextBounds(text, 0, max, textBounds);
+                            textPaint.getTextBounds(text, 0, max, textBounds)
                             drawText(text, 0, max, x, y - textBounds.exactCenterY(), textPaint)
-                        }
-                        if (commit) {
-                            it.finder.x = it.x
-                            it.finder.y = it.y
 
-                            finderDao.update(it.finder)
                         }
                     }
+                    finderConfigs.forEach {
+                        it.apply {
 
+                        }
+                    }
                 } finally {
                     surfaceHolder.unlockCanvasAndPost(this)
                 }
@@ -167,55 +204,67 @@ class AppWallpaperService : WallpaperService() {
 
         override fun onTouchEvent(event: MotionEvent?) {
             super.onTouchEvent(event)
+            var redraw = false
             event?.let {
                 when (it.action) {
                     MotionEvent.ACTION_DOWN -> {
                         var touch = false
-                        mFinderConfigs.forEach {
+                        finderConfigs.forEach {
                             if (touch) {
                                 // 既にタッチ済みの場合は他オブジェクトの処理をスキップする
                                 return@forEach
                             }
                             it.checkTouched(actionDown = event)
                             touch = it.touched
-                            when {
-                                it.isDoubleTouch -> {
-                                    if (it.finder.id != null) startActivity(TransientActivity.intent(this@AppWallpaperService, it.finder.id!!))
-                                }
-                                else -> {
-                                }
-                            }
+//                            when {
+//                                it.isDoubleTouch -> {
+//                                    if (it.finder.id != null) startActivity(TransientActivity.intent(this@AppWallpaperService, it.finder.id!!))
+//                                }
+//                                else -> {
+//                                }
+//                            }
                             it.startDoubleTouchReception()
                         }
 
+                        finderConfigs.sortWith(compareBy({ it.touched }, { it.finder.id }))
+
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        mFinderConfigs.forEach {
+                        finderConfigs.forEach {
                             it.apply {
                                 if (touched) {
+                                    redraw = true
                                     it.updatePosition(in_x = event.x, in_y = event.y)
                                     return@forEach
                                 }
                             }
                         }
-                        drawFrame()
                     }
                     MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                        mFinderConfigs.forEach {
+                        finderConfigs.forEach {
+                            redraw = redraw or it.touched
                             it.touched = false
                         }
-                        drawFrame(commit = true)
+                        recordFinderConfigsCoordinate()
                     }
                     else -> {
                         // 処理なし
                     }
                 }
             }
+            if (redraw) {
+                drawFrame()
+            }
+
         }
 
     }
 
     override fun onCreateEngine(): Engine = LiveEngine()
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return super.onStartCommand(intent, flags, startId)
+    }
 
 }
 

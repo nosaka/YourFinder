@@ -9,6 +9,11 @@
         <variable
             name="finder"
             type="me.ns.yourfinder.data.Finder" />
+
+        <variable
+            name="handlers"
+            type="me.ns.yourfinder.dialog.EditFinderDialog.Handlers" />
+
     </data>
 
     <LinearLayout
@@ -17,22 +22,41 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/addFinder_nameTextInputEditText"
+        <ImageView
+            android:id="@+id/editFinder_contentImageView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/input_hint_finder_name"
-            android:inputType="text"
-            android:text="@={finder.name}" />
+            android:layout_height="320dp"
+            android:background="#C0C0C0"
+            android:onClick="@{handlers::onClickImage}"
+            app:smallImageUrl="@{finder.iconUrl}" />
 
-
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/addFinder_descriptionTextInputEditText"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/input_hint_finder_description"
-            android:inputType="text"
-            android:text="@={finder.description}" />
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/editFinder_nameTextInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/input_hint_finder_name"
+                android:inputType="text"
+                android:text="@={finder.name}" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/editFinder_descriptionTextInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/input_hint_finder_description"
+                android:inputType="text"
+                android:text="@={finder.description}" />
+
+        </android.support.design.widget.TextInputLayout>
 
 
     </LinearLayout>

@@ -23,114 +23,100 @@ object AppBindingAdapter {
     @BindingAdapter("bind:imageUrl")
     @JvmStatic
     fun loadImage(view: ImageView, url: Uri?) {
-        url?.let {
-            Picasso.with(view.context)
-                    .load(it)
-                    .placeholder(R.drawable.drawable_round_placeholder)
-                    .error(R.drawable.ic_unknown)
-                    .into(view)
-        }
+        Picasso.with(view.context)
+                .load(url)
+                .placeholder(R.drawable.drawable_round_placeholder)
+                .error(R.drawable.ic_unknown)
+                .into(view)
     }
 
     @BindingAdapter("bind:imageUrl")
     @JvmStatic
     fun loadImage(view: ImageView, url: String?) {
-        url?.let {
-            Picasso.with(view.context)
-                    .load(File(it))
-                    .placeholder(R.drawable.drawable_round_placeholder)
-                    .error(R.drawable.ic_unknown)
-                    .into(view)
-        }
+        Picasso.with(view.context)
+                .load(if (url != null) File(url) else null)
+                .placeholder(R.drawable.drawable_round_placeholder)
+                .error(R.drawable.ic_unknown)
+                .into(view)
     }
 
     @BindingAdapter("bind:smallImageUrl")
     @JvmStatic
     fun loadSmallImage(view: ImageView, url: Uri?) {
-        url?.let {
-            Picasso.with(view.context)
-                    .load(it)
-                    .placeholder(R.drawable.drawable_round_placeholder)
-                    .error(R.drawable.ic_unknown)
-                    .resize(IMAGE_SIZE_SMALL, IMAGE_SIZE_SMALL)
-                    .onlyScaleDown()
-                    .centerCrop()
-                    .into(view)
-        }
+        Picasso.with(view.context)
+                .load(url)
+                .placeholder(R.drawable.drawable_round_placeholder)
+                .error(R.drawable.ic_unknown)
+                .resize(IMAGE_SIZE_SMALL, IMAGE_SIZE_SMALL)
+                .onlyScaleDown()
+                .centerCrop()
+                .into(view)
+
     }
 
     @BindingAdapter("bind:smallImageUrl")
     @JvmStatic
     fun loadSmallImage(view: ImageView, url: String?) {
-        url?.let {
-            Picasso.with(view.context)
-                    .load(File(it))
-                    .placeholder(R.drawable.drawable_round_placeholder)
-                    .error(R.drawable.ic_unknown)
-                    .resize(IMAGE_SIZE_SMALL, IMAGE_SIZE_SMALL)
-                    .onlyScaleDown()
-                    .centerCrop()
-                    .into(view)
-        }
+        Picasso.with(view.context)
+                .load(if (url != null) File(url) else null)
+                .placeholder(R.drawable.drawable_round_placeholder)
+                .error(R.drawable.ic_unknown)
+                .resize(IMAGE_SIZE_SMALL, IMAGE_SIZE_SMALL)
+                .onlyScaleDown()
+                .centerCrop()
+                .into(view)
+
     }
 
     @BindingAdapter("bind:middleImageUrl")
     @JvmStatic
     fun loadMiddleImage(view: ImageView, url: Uri?) {
-        url?.let {
-            Picasso.with(view.context)
-                    .load(it)
-                    .placeholder(R.drawable.drawable_round_placeholder)
-                    .error(R.drawable.ic_unknown)
-                    .resize(IMAGE_SIZE_MIDDLE, IMAGE_SIZE_MIDDLE)
-                    .onlyScaleDown()
-                    .centerCrop()
-                    .into(view)
-        }
+        Picasso.with(view.context)
+                .load(url)
+                .placeholder(R.drawable.drawable_round_placeholder)
+                .error(R.drawable.ic_unknown)
+                .resize(IMAGE_SIZE_MIDDLE, IMAGE_SIZE_MIDDLE)
+                .onlyScaleDown()
+                .centerCrop()
+                .into(view)
     }
 
     @BindingAdapter("bind:middleImageUrl")
     @JvmStatic
     fun loadMiddleImage(view: ImageView, url: String?) {
-        url?.let {
-            Picasso.with(view.context)
-                    .load(File(it))
-                    .placeholder(R.drawable.drawable_round_placeholder)
-                    .error(R.drawable.ic_unknown)
-                    .resize(IMAGE_SIZE_MIDDLE, IMAGE_SIZE_MIDDLE)
-                    .onlyScaleDown()
-                    .centerCrop()
-                    .into(view)
-        }
+        Picasso.with(view.context)
+                .load(if (url != null) File(url) else null)
+                .placeholder(R.drawable.drawable_round_placeholder)
+                .error(R.drawable.ic_unknown)
+                .resize(IMAGE_SIZE_MIDDLE, IMAGE_SIZE_MIDDLE)
+                .onlyScaleDown()
+                .centerCrop()
+                .into(view)
     }
 
     @BindingAdapter("bind:largeImageUrl")
     @JvmStatic
     fun loadLargeImage(view: ImageView, url: Uri?) {
-        url?.let {
-            Picasso.with(view.context)
-                    .load(it)
-                    .placeholder(R.drawable.drawable_round_placeholder)
-                    .error(R.drawable.ic_unknown)
-                    .resize(IMAGE_SIZE_LARGE, IMAGE_SIZE_LARGE)
-                    .onlyScaleDown()
-                    .centerCrop()
-                    .into(view)
-        }
+        Picasso.with(view.context)
+                .load(url)
+                .placeholder(R.drawable.drawable_round_placeholder)
+                .error(R.drawable.ic_unknown)
+                .resize(IMAGE_SIZE_LARGE, IMAGE_SIZE_LARGE)
+                .onlyScaleDown()
+                .centerCrop()
+                .into(view)
     }
 
     @BindingAdapter("bind:largeImageUrl")
     @JvmStatic
     fun loadLargeImage(view: ImageView, url: String?) {
-        url?.let {
-            Picasso.with(view.context)
-                    .load(File(it))
-                    .placeholder(R.drawable.drawable_round_placeholder)
-                    .error(R.drawable.ic_unknown)
-                    .resize(IMAGE_SIZE_LARGE, IMAGE_SIZE_LARGE)
-                    .onlyScaleDown()
-                    .centerCrop()
-                    .into(view)
-        }
+        Picasso.with(view.context)
+                .load(if (url != null) File(url) else null)
+                .placeholder(R.drawable.drawable_round_placeholder)
+                .error(R.drawable.ic_unknown)
+                .resize(IMAGE_SIZE_LARGE, IMAGE_SIZE_LARGE)
+                .onlyScaleDown()
+                .centerCrop()
+                .into(view)
     }
 }

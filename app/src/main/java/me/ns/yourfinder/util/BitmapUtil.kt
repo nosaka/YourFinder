@@ -14,16 +14,20 @@ object BitmapUtil {
         option.inJustDecodeBounds = true
         BitmapFactory.decodeFile(pathName, option)
 
+        val ratio = option.outWidth.toDouble() / option.outHeight.toDouble()
+
         if (option.outWidth < width || option.outHeight < height) {
             // 縦、横のどちらかが指定値より小さい場合は普通にBitmap生成
-            return BitmapFactory.decodeFile(pathName);
+            option.inJustDecodeBounds = false
+            return BitmapFactory.decodeFile(pathName, option)
         }
 
         val scaleWidth = width / option.outWidth
         val scaleHeight = height / option.outHeight
+
         var newSize = 0
         var oldSize = 0
-        if (scaleWidth > scaleHeight) {
+        if (scaleWidth < scaleHeight) {
             newSize = width
             oldSize = option.outWidth
         } else {
@@ -45,23 +49,35 @@ object BitmapUtil {
         option.inJustDecodeBounds = false
         option.inSampleSize = sampleSize
 
-        return Bitmap.createScaledBitmap(BitmapFactory.decodeFile(pathName, option), height, width, false)
+        val bitmap = BitmapFactory.decodeFile(pathName, option)
+
+        var resizeWidth = 0
+        var resizeHeight = 0
+        if (bitmap.width < bitmap.height) {
+            resizeWidth = width
+            resizeHeight = (resizeWidth / ratio).toInt()
+        } else {
+            resizeHeight = height
+            resizeWidth = (resizeHeight * ratio).toInt()
+        }
+
+        return Bitmap.createScaledBitmap(bitmap, resizeWidth, resizeHeight, false)
     }
 
     fun createCircleBitmap(bitmap: Bitmap, radius: Float): Bitmap {
-        val size: Int = (radius * 2).toInt()
-        val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val size = radius * 2
+        val output = Bitmap.createBitmap(size.toInt(), size.toInt(), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(output)
 
         val paint = Paint()
-        val rect = Rect(0, 0, size, size)
+        val rect = Rect(0, 0, size.toInt(), size.toInt())
 
         // prepare canvas for transfer
         paint.isAntiAlias = true
         paint.color = 0xFFFFFFFF.toInt()
         paint.style = Paint.Style.FILL
         canvas.drawARGB(0, 0, 0, 0)
-        canvas.drawCircle((bitmap.width / 2).toFloat(), (bitmap.height / 2).toFloat(), (bitmap.height / 2).toFloat(), paint)
+        canvas.drawCircle(radius, radius, radius, paint)
 
 
         // draw bitmap

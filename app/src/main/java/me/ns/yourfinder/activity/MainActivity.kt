@@ -15,12 +15,10 @@ import me.ns.yourfinder.adapter.FinderAdapter
 import me.ns.yourfinder.data.AppDatabase
 import me.ns.yourfinder.data.FinderDao
 import me.ns.yourfinder.databinding.ActivityMainBinding
-import me.ns.yourfinder.listener.ItemTouchCallbackMethod
 import me.ns.yourfinder.listener.ItemTouchHelperCallback
-import java.util.*
 
 
-class MainActivity : LifecycleActivity(), ItemTouchCallbackMethod {
+class MainActivity : LifecycleActivity(), ItemTouchHelperCallback.Method {
 
     /**
      * Handlers
@@ -50,11 +48,13 @@ class MainActivity : LifecycleActivity(), ItemTouchCallbackMethod {
         setActionBar(binding.mainToolbar)
 
         val finderItems = finderDao.allLiveData()
+        finderItems.observeForever { }
         finderItems.observe(this@MainActivity, Observer { value ->
-            finderAdapter.items = value ?: ArrayList()
+            finderAdapter.setItems(value ?: ArrayList())
             finderAdapter.notifyDataSetChanged()
         })
-        finderAdapter = FinderAdapter(finderItems.value ?: ArrayList())
+        finderAdapter = FinderAdapter()
+        finderAdapter.setItems(finderItems.value ?: ArrayList())
         val helper = ItemTouchHelper(ItemTouchHelperCallback(this@MainActivity))
         finderAdapter.onItemClick = { item ->
             item.id?.let {
@@ -79,37 +79,34 @@ class MainActivity : LifecycleActivity(), ItemTouchCallbackMethod {
 
     }
 
-    override fun onMove(fromPos: Int, toPos: Int) {
-    }
-
     override fun onMoved(fromPos: Int, toPos: Int) {
-        finderAdapter.notifyItemMoved(fromPos, toPos)
-        Collections.swap(finderAdapter.items, fromPos, toPos)
+        finderAdapter.moveItem(fromPos, toPos)
     }
 
     override fun onDelete(position: Int) {
         val item = finderAdapter.getItem(position)
-        val message = getString(R.string.message_delete_finder, item.name ?: getString(R.string.finder))
-        Snackbar.make(binding.mainRecyclerView, message, Snackbar.LENGTH_SHORT)
-                .setAction(R.string.action_undo, {
-                    finderAdapter.notifyItemChanged(position)
-                })
-                .addCallback(object : Snackbar.Callback() {
-                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                        super.onDismissed(transientBottomBar, event)
-                        if (event != DISMISS_EVENT_ACTION) {
-                            finderDao.delete(item)
+        item?.let { finder ->
+            finderAdapter.removeItem(position)
+            val message = getString(R.string.message_delete_finder, finder.name ?: getString(R.string.finder))
+            Snackbar.make(binding.mainRecyclerView, message, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.action_undo, {
+                        finderAdapter.insertItem(finder, position)
+                        finderAdapter.notifyItemChanged(position)
+                    })
+                    .addCallback(object : Snackbar.Callback() {
+                        override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                            super.onDismissed(transientBottomBar, event)
+                            if (event != DISMISS_EVENT_ACTION) {
+                                finderDao.delete(finder)
+                            }
                         }
-                    }
-                })
-                .show()
+                    })
+                    .show()
+        }
 
     }
 
     override fun onMoveFinished() {
-        finderAdapter.items.withIndex().forEach {
-            it.value.position = it.index
-        }
-        finderDao.update(finderAdapter.items)
+        finderDao.update(finderAdapter.updateOrderItems())
     }
 }

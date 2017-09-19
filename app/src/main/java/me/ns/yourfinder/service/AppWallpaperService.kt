@@ -26,7 +26,7 @@ class AppWallpaperService : WallpaperService() {
             val INTERVAL_RECEPTION_DOUBLE_TOUCH = 300L
         }
 
-        internal var radius: Float = 160f
+        internal var radius: Float = 120f
 
         internal var x: Float = 0.0f
             set(value) {
@@ -59,8 +59,8 @@ class AppWallpaperService : WallpaperService() {
         init {
             x = finder.x
             y = finder.y
+            val size = (radius * 2).toInt()
             finder.iconUrl?.let {
-                val size = (radius * 2).toInt()
                 val scaledBitmap = BitmapUtil.createScaledBitmap(it, size, size)
                 bitmap = BitmapUtil.createCircleBitmap(scaledBitmap, radius)
             }
@@ -91,10 +91,20 @@ class AppWallpaperService : WallpaperService() {
 
     inner class LiveEngine : Engine() {
 
+        private val INFLATE_RADIUS = 24f
+
         private val paint = Paint().apply {
             isAntiAlias = true
+            color = Color.WHITE
             setShadowLayer(8f, 0f, 0f, Color.GRAY)
         }
+
+        private val touchedPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.LTGRAY
+            setShadowLayer(8f, 0f, 0f, Color.GRAY)
+        }
+
 
         private val textPaint = Paint().apply {
             color = Color.GRAY
@@ -172,18 +182,27 @@ class AppWallpaperService : WallpaperService() {
                     finderConfigs.forEach {
                         it.apply {
 
-                            bitmap?.let {
-                                val dst = RectF(0f, 0f, (radius * 2), (radius * 2))
-                                dst.offset((x - radius), (y - radius))
-                                val src = Rect(0, 0, it.width, it.height)
-                                drawBitmap(it, src, dst, paint)
+                            val drawDiameter = if (touched) (radius + INFLATE_RADIUS) * 2 else radius * 2
+                            val drawRadius = if (touched) radius + INFLATE_RADIUS else radius
+                            if (bitmap != null) {
+                                // 画像設定時
+                                bitmap?.let {
+                                    val dst = RectF(0f, 0f, drawDiameter, drawDiameter)
+                                    dst.offset((x - drawRadius), (y - drawRadius))
+                                    val src = Rect(0, 0, it.width, it.height)
+
+                                    drawBitmap(it, src, dst, if (touched) touchedPaint else paint)
+                                }
+                            } else {
+                                // 画像未設定時
+                                drawCircle(x, y, drawRadius, if (touched) touchedPaint else paint)
                             }
 
                             val text = finder.name ?: ""
-                            val max: Int = if (radius / textPaint.textSize > text.length) {
+                            val max: Int = if (drawDiameter / textPaint.textSize > text.length) {
                                 text.length
                             } else {
-                                (radius / textPaint.textSize).toInt()
+                                (drawDiameter / textPaint.textSize).toInt()
                             }
                             val textBounds = Rect()
                             textPaint.getTextBounds(text, 0, max, textBounds)

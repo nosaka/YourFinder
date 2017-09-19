@@ -48,7 +48,6 @@
                         android:layout_centerInParent="true"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:scaleType="centerCrop"
-                        android:src="@android:mipmap/sym_def_app_icon"
                         app:smallImageUrl="@{finder.iconUrl}" />
 
                     <de.hdodenhof.circleimageview.CircleImageView

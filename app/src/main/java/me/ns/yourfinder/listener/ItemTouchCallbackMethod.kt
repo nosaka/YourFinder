@@ -1,5 +1,9 @@
 package me.ns.yourfinder.listener
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 
@@ -8,21 +12,23 @@ import android.support.v7.widget.helper.ItemTouchHelper
  *
  * Created by shintaro.nosaka on 2017/09/12.
  */
-interface ItemTouchCallbackMethod {
-    fun onDelete(position: Int)
-    fun onMove(fromPos: Int, toPos: Int)
-    fun onMoved(fromPos: Int, toPos: Int)
-    fun onMoveFinished()
-}
+class ItemTouchHelperCallback(private val method: Method) : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.RIGHT) {
 
-class ItemTouchHelperCallback(private val method: ItemTouchCallbackMethod) : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.RIGHT) {
+    interface Method {
+        fun onDelete(position: Int)
+        fun onMoved(fromPos: Int, toPos: Int)
+        fun onMoveFinished()
+    }
 
     private var moving = false
 
+    var removeIconBitmap: Bitmap? = null
+
+    var removePaint = Paint().apply {
+        color = Color.GRAY
+    }
+
     override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-        val fromPos = viewHolder.adapterPosition;
-        val toPos = target.adapterPosition;
-        method.onMove(fromPos, toPos)
         moving = true
         return true
     }
@@ -41,6 +47,32 @@ class ItemTouchHelperCallback(private val method: ItemTouchCallbackMethod) : Ite
         if (moving && actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
             method.onMoveFinished()
         }
+    }
 
+    override fun onChildDraw(canvas: Canvas?, recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+        super.onChildDraw(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && viewHolder?.itemView != null) {
+            canvas?.apply {
+                if (dX > 0) {
+                    drawRect(viewHolder.itemView.left.toFloat(),
+                            viewHolder.itemView.top.toFloat(),
+                            dX,
+                            viewHolder.itemView.bottom.toFloat(),
+                            removePaint)
+
+                    removeIconBitmap?.let {
+                        val centerVertical = viewHolder.itemView.top + (viewHolder.itemView.bottom - viewHolder.itemView.top) / 2 - it.height / 2
+                        drawBitmap(it, 0f, centerVertical.toFloat(), removePaint)
+                    }
+
+                } else {
+                    drawRect(viewHolder.itemView.right.toFloat() + dX,
+                            viewHolder.itemView.top.toFloat(),
+                            viewHolder.itemView.right.toFloat(),
+                            viewHolder.itemView.bottom.toFloat(),
+                            removePaint)
+                }
+            }
+        }
     }
 }
